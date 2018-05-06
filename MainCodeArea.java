@@ -34,15 +34,11 @@ public class MainCodeArea {
 	*/
 
 	public void initalizeXValues(ArrayList<String> input){
-		int[] clausesLeft = new int[input.size()];
-		int[] clausesRight = new int[input.size()];
 		ArrayList<Integer> clauses = new ArrayList<Integer>();
 		String[] line;
 
 		for(int i = 0; i < input.size(); i++){
 			line = input.get(i).split(" ");
-			//clausesLeft[i] = Integer.parseInt(line[0]);
-			//clausesRight[i] = Integer.parseInt(line[1]);
 			clauses.add(Integer.parseInt(line[0]));
 			clauses.add(Integer.parseInt(line[1]));     
 		}
@@ -50,8 +46,6 @@ public class MainCodeArea {
 			System.out.print(clauses.get(i) + " ");
 			i++;
 			System.out.print(clauses.get(i) + "\n");
-			// System.out.print(clausesLeft[i] + " ");
-			// System.out.print(clausesRight[i] + "\n");
 		} 
 		getTableNArrays(clauses);
 	}
@@ -61,39 +55,37 @@ public class MainCodeArea {
 	retruns false if it doesnt 
 	*/
 	public boolean checkIfItExists(ArrayList<Integer> ar,int temp){
-
 		for(int i = 0; i < ar.size(); i++)
-			if(temp ==ar.get(i))
+			if(temp ==ar.get(i)) 
 				return true;
-
 			return false;
 		}
+
 	/*
-		creates an array of all x variables used 
-		and a truth table 
-		with the corresponding not values
+	creates an array of all x variables used 
+	and a truth table 
+	with the corresponding not values
 	*/
-		public void getTableNArrays(ArrayList<Integer> clauses){
-			ArrayList<Integer> absValueList = new ArrayList<Integer>();
-			int[][] truthTable;
+	public void getTableNArrays(ArrayList<Integer> clauses){
+		ArrayList<Integer> absValueList = new ArrayList<Integer>();
+		int[][] truthTable;
+		int temp,totalNums = 0;
 
-			int temp,totalNums = 0;
-
-			for(int i = 0; i < clauses.size(); i++){
-				temp = Math.abs(clauses.get(i));
-				if(checkIfItExists(absValueList,temp) == false){
-					absValueList.add(temp);
-					totalNums++;
-					absValueList.add((temp * -1));
-				}
-		} //Collections.sort(absValueList); // sort
+		for(int i = 0; i < clauses.size(); i++){
+			temp = Math.abs(clauses.get(i));
+			if(checkIfItExists(absValueList,temp) == false){
+				absValueList.add(temp);
+				totalNums++;
+				absValueList.add((temp * -1));
+			}
+		}
 
 		truthTable = createTruthTable(absValueList,totalNums);
 		ArrayList<Integer> xVarUsed = xVarUsed(clauses, absValueList);
-		
+
 		print2dArray(totalNums, truthTable);
 
-		part3(clauses,truthTable,xVarUsed);
+		bruteForceMethod(clauses,truthTable);
 	}
 
 	/*
@@ -117,11 +109,10 @@ public class MainCodeArea {
 	*/
 	public int[][] createTruthTable(ArrayList<Integer> absValueList,int totalNums){
 		int[][] truthTable = new int[(int)((Math.pow(2,totalNums))+1)][totalNums*2];
-		int ans =0, counter = 0;
+		int ans = 0, counter = 0;
 
-		for(int col = 0; col < (totalNums*2) ; col++){
+		for(int col = 0; col < (totalNums*2) ; col++)
 			truthTable[0][col] = absValueList.get(col);
-		}
 
 		for (int row = 1; row<(int)((Math.pow(2,totalNums))+1); row++) {
 			counter = 0;
@@ -140,7 +131,6 @@ public class MainCodeArea {
 		return truthTable;
 	}
 
-	//public boolean findIndex()
 	/*
 	creates the an array list with only the x variables used within the input
 	*/
@@ -157,119 +147,55 @@ public class MainCodeArea {
 		}
 		return xVarUsed; 
 	}
-
-	public int getCol (int[][] truthTable, int row, int c1){
-		//boolean value;
-		for(int columnValue = 0; columnValue < truthTable[0].length ; columnValue++){
-			if( c1 == truthTable[0][columnValue])
-				return columnValue;
-		}
-
-		return -10;
-
-		//return true; 
-
+	/*
+	get the corresponding variables boolean value via the truth table 
+	by finding its coressponding column : 
+	truthTable[row itteration][coresspponding(x1 or x2) col]
+	*/)
+	public int getColIndex (int[][] truthTable,  int x1){
+		for(int col = 0; col < truthTable[0].length ; col++)
+			if( x1 == truthTable[0][col]) 
+				return col;
+		return -1;// forerror
 	}
-	public void part3(ArrayList<Integer> clauses, int[][] truthTable, ArrayList<Integer> xVarUsed ){
-		//0 = false
-		//1 = true
+	/*
+	checks loops through the truth table rows, 
+		within each row, we loop through all the clauses 
+		and store clauses in variables x1 and x2
 
-		System.out.println(xVarUsed);
-		System.out.println(xVarUsed.size() * 2);
+		then we get the corresponding variables boolean value via the truth table 
+		by finding its coressponding column : 
+		truthTable[row itteration][coresspponding(x1 or x2) col]
+		we then check 
+		if either x1Boolean and x2Boolean values are == 1
+			then we increase the truth counter
 
-		int c1Bool = 1, c2Bool = 1;
-		int c1 = 0, c2 = 0;
-		int columnValue = 0, truthCounter =0, max = 0, temp = 0;
-
-		boolean test = false;
-		System.out.println();
-
-
+	before the ending of each row itteration 
+	we take the max truthCounter and the previous max 
+	to find the max amount of truths between all the itterations
+	*/
+	public void bruteForceMethod(ArrayList<Integer> clauses, int[][] truthTable){
+		int x1Bool = 1, x2Bool = 1, x1 = 0, x2 = 0;
+		int col = 0, truthCounter = 0, max = 0;
 
 		for(int row = 1; row < truthTable.length; row++){
 			truthCounter = 0;
-			System.out.println("ROW :" +row);
-			
 			for (int clos = 0; clos < clauses.size() ;clos++ ) {
-				c1 = clauses.get(clos);
+				x1 = clauses.get(clos);
 				clos++;
-				c2 = clauses.get(clos);
+				x2 = clauses.get(clos);
 
-				columnValue = getCol(truthTable, row, c1);
-				temp = truthTable[row][columnValue ];
-				c1Bool = temp;
+				col = getColIndex(truthTable, x1);
+				x1Bool = truthTable[row][col];
 
-				columnValue = getCol(truthTable, row, c2);
-				temp = truthTable[row][columnValue ];
-				c2Bool = temp;
+				col = getColIndex(truthTable, x2);
+				x2Bool = truthTable[row][col];
 
-				test = (c1Bool == 1) || (c2Bool == 1);
-				System.out.println("c1 : "+c1+ " = "+c1Bool+"\tc2 : "+c2+ " = "+c2Bool+"\tboolean comp: "+test );
-
-				if(test)
+				if( ( (x1Bool == 1) || (x2Bool == 1) ) )
 					truthCounter++;
-
 			}
 			max = Math.max(truthCounter,max);
-			System.out.println();
 		}
-
-
-
 		System.out.println("Max truths "+max);
 	}
-
-	// for(int xBeingUsed= 0; xBeingUsed < xVarUsed.size(); xBeingUsed++){	 // loops through all the xVar used 
-		// 	x1 = xVarUsed.get(xBeingUsed);
-		// 	// for (int choice = 0; choice < 2 ; choice++ ) {
-
-
-		// 	// 	if (choice == 0){
-		// 	// 		if(x1 > 0) xOneBool = true; // if x1 positive then true
-		// 	// 		else xOneBool = false; //else if negative then false
-		// 	// 	}
-		// 	// 	else{
-		// 	// 		if(x1 < 0) xOneBool = true; // if x1 negative then true
-		// 	// 		else xOneBool = false; // else if positive then false
-		// 	// 	}
-		// 		for (int i = 0; i < clauses.size() ; i++){ // gets clauses
-		// 			c1 = clauses.get(i);
-		// 			i++;
-		// 			c2 = clauses.get(i);
-		// 			if (c1 == x1){
-		// 				// use xOneBool
-
-		// 			}
-		// 			if (c2 == x1){
-
-		// 			}
-		// 				//if c1 == xVar used 
-		// 				// if c2 == xvar used 
-		// 				// truth table
-		// 		}
-		// 		for (int column = 0;column < (clauses.size()/2)  ; column++) {
-
-		// 		}
-		// 	//}		
-		// }
-
-		// for(int i = 0; i < clauses.size(); i++){
-		// 	bool1 = clauses.get(i);
-		// 	i++;
-		// 	bool2 = clauses.get(i);
-
-		// 	if(bool1>0)
-		// 		xBool1 =true;
-		// 	else
-		// 		xBool1 = false;
-		// 	if (bool2 > 0)
-		// 		xBool2 = true;
-		// 	else
-		// 		xBool2=false;
-
-		// 	result = (xBool2 || xBool1);
-		// 	if(result)
-		// 		counter++;
-		// }
-		//System.out.println("\n"+counter);
 }
