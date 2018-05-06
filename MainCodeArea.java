@@ -32,7 +32,6 @@ public class MainCodeArea {
 	/*
 	creates an int array to hold all the x values
 	*/
-
 	public void initalizeXValues(ArrayList<String> input){
 		ArrayList<Integer> clauses = new ArrayList<Integer>();
 		String[] line;
@@ -56,10 +55,9 @@ public class MainCodeArea {
 	*/
 	public boolean checkIfItExists(ArrayList<Integer> ar,int temp){
 		for(int i = 0; i < ar.size(); i++)
-			if(temp ==ar.get(i)) 
-				return true;
-			return false;
-		}
+			if(temp ==ar.get(i))  return true; // does exist
+		return false; // does not exist
+	}
 
 	/*
 	creates an array of all x variables used 
@@ -67,13 +65,13 @@ public class MainCodeArea {
 	with the corresponding not values
 	*/
 	public void getTableNArrays(ArrayList<Integer> clauses){
-		ArrayList<Integer> absValueList = new ArrayList<Integer>();
+		ArrayList<Integer> absValueList = new ArrayList<Integer>(); //rename single variables
 		int[][] truthTable;
 		int temp,totalNums = 0;
 
 		for(int i = 0; i < clauses.size(); i++){
 			temp = Math.abs(clauses.get(i));
-			if(checkIfItExists(absValueList,temp) == false){
+			if(checkIfItExists(absValueList,temp) == false){ //checks if it does not exist
 				absValueList.add(temp);
 				totalNums++;
 				absValueList.add((temp * -1));
@@ -81,7 +79,7 @@ public class MainCodeArea {
 		}
 
 		truthTable = createTruthTable(absValueList,totalNums);
-		ArrayList<Integer> xVarUsed = xVarUsed(clauses, absValueList);
+		//ArrayList<Integer> xVarUsed = xVarUsed(clauses, absValueList); delete this maybe?
 
 		print2dArray(totalNums, truthTable);
 
@@ -109,23 +107,23 @@ public class MainCodeArea {
 	*/
 	public int[][] createTruthTable(ArrayList<Integer> absValueList,int totalNums){
 		int[][] truthTable = new int[(int)((Math.pow(2,totalNums))+1)][totalNums*2];
-		int ans = 0, counter = 0;
+		int ans = 0, column = 0;
 
 		for(int col = 0; col < (totalNums*2) ; col++)
 			truthTable[0][col] = absValueList.get(col);
 
 		for (int row = 1; row<(int)((Math.pow(2,totalNums))+1); row++) {
-			counter = 0;
-			for (int col=totalNums-1; col>=0; col--) {
-				ans = ((row-1)/ ((int) Math.pow(2, col)))%2 ;
+			column = 0;
+			for (int power=totalNums-1; power>=0; power--) {
+				ans = ((row-1)/ ((int) Math.pow(2, power)))%2 ;
 				if(ans == 0) ans = 1;
 				else ans = 0;
-				truthTable[row][counter] = ans;
-				counter++;
+				truthTable[row][column] = ans;
+				column++;
 				if(ans != 0) ans = 0;
 				else ans = 1;	
-				truthTable[row][counter] = ans;
-				counter++;
+				truthTable[row][column] = ans;
+				column++;
 			}
 		}
 		return truthTable;
@@ -151,7 +149,7 @@ public class MainCodeArea {
 	get the corresponding variables boolean value via the truth table 
 	by finding its coressponding column : 
 	truthTable[row itteration][coresspponding(x1 or x2) col]
-	*/)
+	*/
 	public int getColIndex (int[][] truthTable,  int x1){
 		for(int col = 0; col < truthTable[0].length ; col++)
 			if( x1 == truthTable[0][col]) 
