@@ -16,15 +16,14 @@ public class MainCodeArea {
 		ArrayList<Integer> clauses = new ArrayList<Integer>();
 		String line = null;
 		String[] lineA;
-		int i = 0;
+
 		try{
 			FileReader fileReader = new FileReader("input3.txt");
 			BufferedReader bufferedReader = new BufferedReader(fileReader);  
 			while( ( line = bufferedReader.readLine() ) != null ){
 				lineA = line.split(" ");
 				clauses.add(Integer.parseInt(lineA[0]));
-				clauses.add(Integer.parseInt(lineA[1]));  
-				i++;
+				clauses.add(Integer.parseInt(lineA[1])); 
 			}
 		}
 		catch(FileNotFoundException exFileNotFound){
@@ -47,6 +46,17 @@ public class MainCodeArea {
 	}
 
 	/*
+	prints a 2d array 
+	*/
+	public void print2dArray(int totalNums, int[][] truthTable){
+		for (int row = 0; row < truthTable.length ; row++) {
+			for (int col = 0 ;col < truthTable[0].length ;  col++) 
+				System.out.print(truthTable[row][col] + "\t");
+			if(row == 0) System.out.print("\n-------------------------\n");
+		}
+	}
+
+	/*
 	creates an array of all x variables used 
 	and a truth table 
 	with the corresponding not values
@@ -64,31 +74,11 @@ public class MainCodeArea {
 				absValueList.add((temp * -1));
 			}
 		}
-
 		truthTable = createTruthTable(absValueList,totalNums);
 		//ArrayList<Integer> xVarUsed = xVarUsed(clauses, absValueList); delete this maybe?
-
 		print2dArray(totalNums, truthTable);
-
 		bruteForceMethod(clauses,truthTable);
 	}
-
-	/*
-	prints a 2d array 
-	*/
-	public void print2dArray(int totalNums, int[][] truthTable){
-		for (int row = 0; row < truthTable.length ; row++) {
-			//System.out.print(row+" :");
-			for (int col = 0 ;col < truthTable[0].length ;  col++) {
-				System.out.print(truthTable[row][col] + "\t");
-			}
-			if(row == 0)
-				System.out.print("\n-------------------------");
-			System.out.println();
-		}
-
-	}
-
 	/*
 	creates a truth table with the coresspoding not values
 	*/
@@ -139,8 +129,7 @@ public class MainCodeArea {
 	*/
 	public int getColIndex (int[][] truthTable,  int x1){
 		for(int col = 0; col < truthTable[0].length ; col++)
-			if( x1 == truthTable[0][col]) 
-				return col;
+			if( x1 == truthTable[0][col]) return col;
 		return -1;// forerror
 	}
 	/*
@@ -160,24 +149,20 @@ public class MainCodeArea {
 	to find the max amount of truths between all the itterations
 	*/
 	public void bruteForceMethod(ArrayList<Integer> clauses, int[][] truthTable){
-		int x1Bool = 1, x2Bool = 1, x1 = 0, x2 = 0;
-		int col = 0, truthCounter = 0, currMax = 0;
+		int x1Bool = 1, x2Bool = 1, prevMax = 0, currMax = 0, col = 0, truthCounter = 0;
 		String output = "";
-		int temp = 0;
-		int clausesNum = (clauses.size()/2);
-		int prevMax = 0;
+		
 
 		for(int row = 1; row < truthTable.length; row++){
 			truthCounter = 0;
-			for (int clos = 0; clos < clauses.size() ;clos++ ) {
-				x1 = clauses.get(clos);
-				clos++;
-				x2 = clauses.get(clos);
+			for (int clos = 0; clos < clauses.size() ; clos++ ) {
 
-				col = getColIndex(truthTable, x1);
+				col = getColIndex(truthTable, clauses.get(clos) );
 				x1Bool = truthTable[row][col];
 
-				col = getColIndex(truthTable, x2);
+				clos++;
+
+				col = getColIndex(truthTable, clauses.get(clos) );
 				x2Bool = truthTable[row][col];
 
 				if( ( (x1Bool == 1) || (x2Bool == 1) ) )
@@ -186,16 +171,11 @@ public class MainCodeArea {
 			prevMax = currMax;
 			currMax = Math.max(truthCounter,currMax);
 			if(currMax == truthCounter ){
-				
 				if(currMax > prevMax ) output = "";
-				
 				for(int c = 0; c < truthTable[0].length; c++){
-					temp = truthTable[0][c];
-					if(temp > 0){
-						if (truthTable[row][c] == 1)
-							output += "T";
-						else
-							output += "F";	
+					if(truthTable[0][c] > 0){
+						if (truthTable[row][c] == 1) output += "T";
+						else output += "F";	
 					}
 				}
 				output+="\n";
