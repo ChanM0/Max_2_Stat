@@ -8,17 +8,23 @@ public class MainCodeArea {
 
 	/*
 	reads input from input3.txt file. 
-	reads input by line and puts each line into a string ArrayList. 
-	then passes the String ArrayList to 
+	reads input by line a into a line array with a delimiter
+	then passes the int ArrayList 
+	then sends int array list to getTableNArrays
 	*/
 	public void readFile(){
+		ArrayList<Integer> clauses = new ArrayList<Integer>();
 		String line = null;
-		ArrayList<String> input = new ArrayList<String>(); 
+		String[] lineA;
+		int i = 0;
 		try{
 			FileReader fileReader = new FileReader("input3.txt");
 			BufferedReader bufferedReader = new BufferedReader(fileReader);  
 			while( ( line = bufferedReader.readLine() ) != null ){
-				input.add(line);
+				lineA = line.split(" ");
+				clauses.add(Integer.parseInt(lineA[0]));
+				clauses.add(Integer.parseInt(lineA[1]));  
+				i++;
 			}
 		}
 		catch(FileNotFoundException exFileNotFound){
@@ -27,25 +33,6 @@ public class MainCodeArea {
 		catch(IOException exIO){
 			System.out.println("cant Read File!");
 		}
-		initalizeXValues(input);
-	}
-	/*
-	creates an int array to hold all the x values
-	*/
-	public void initalizeXValues(ArrayList<String> input){
-		ArrayList<Integer> clauses = new ArrayList<Integer>();
-		String[] line;
-
-		for(int i = 0; i < input.size(); i++){
-			line = input.get(i).split(" ");
-			clauses.add(Integer.parseInt(line[0]));
-			clauses.add(Integer.parseInt(line[1]));     
-		}
-		for(int i = 0; i < clauses.size(); i++) {   
-			System.out.print(clauses.get(i) + " ");
-			i++;
-			System.out.print(clauses.get(i) + "\n");
-		} 
 		getTableNArrays(clauses);
 	}
 
@@ -69,7 +56,7 @@ public class MainCodeArea {
 		int[][] truthTable;
 		int temp,totalNums = 0;
 
-		for(int i = 0; i < clauses.size(); i++){
+		for(int i = 0; i < clauses.size(); i++){ // put this in read file
 			temp = Math.abs(clauses.get(i));
 			if(checkIfItExists(absValueList,temp) == false){ //checks if it does not exist
 				absValueList.add(temp);
@@ -174,7 +161,11 @@ public class MainCodeArea {
 	*/
 	public void bruteForceMethod(ArrayList<Integer> clauses, int[][] truthTable){
 		int x1Bool = 1, x2Bool = 1, x1 = 0, x2 = 0;
-		int col = 0, truthCounter = 0, max = 0;
+		int col = 0, truthCounter = 0, currMax = 0;
+		String output = "";
+		int temp = 0;
+		int clausesNum = (clauses.size()/2);
+		int prevMax = 0;
 
 		for(int row = 1; row < truthTable.length; row++){
 			truthCounter = 0;
@@ -192,8 +183,25 @@ public class MainCodeArea {
 				if( ( (x1Bool == 1) || (x2Bool == 1) ) )
 					truthCounter++;
 			}
-			max = Math.max(truthCounter,max);
+			prevMax = currMax;
+			currMax = Math.max(truthCounter,currMax);
+			if(currMax == truthCounter ){
+				
+				if(currMax > prevMax ) output = "";
+				
+				for(int c = 0; c < truthTable[0].length; c++){
+					temp = truthTable[0][c];
+					if(temp > 0){
+						if (truthTable[row][c] == 1)
+							output += "T";
+						else
+							output += "F";	
+					}
+				}
+				output+="\n";
+			}
 		}
-		System.out.println("Max truths "+max);
-	}
+		System.out.println("Max truths " + currMax + "\n"+output);
+	}	
 }
+
