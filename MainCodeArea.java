@@ -2,7 +2,12 @@ import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
 
+
+
+
 public class MainCodeArea {
+
+private int numTruthValues =0;
 
 	public MainCodeArea(){}
 
@@ -38,25 +43,30 @@ public class MainCodeArea {
 	
 
 	public void menu(){
-		ArrayList<Integer> clauses = readFile();
-		ArrayList<Integer> singleVars = allPossibleVariables(clauses);
-		 ArrayList<Integer> xVarUsed = xVarUsed(clauses, singleVars);
+		ArrayList<Integer> clauses;
+		ArrayList<Integer> singleVars;
 		Scanner user = new Scanner(System.in);
 		String output = "\n1) True Optimal Solution (slow)\n2) Pretty Good Solution (fast)\n>";
-		NotBruteForce nbf = new NotBruteForce();
+		//NotBruteForce nbf = new NotBruteForce();
 		int ui = 1;
 		while(ui>0 && ui<3){
+			numTruthValues = 0;
 			System.out.print(output);
 			ui = user.nextInt();
-			if(ui == 1)
-				bruteForcePart1(clauses);
+			if(ui == 1){
+				clauses = readFile();
+				singleVars = allPossibleVariables(clauses);
+				bruteForcePart1(clauses,singleVars);
+			}
 			else{
-				nbf.notBruteForce(clauses);
+				clauses = readFile();
+				singleVars = allPossibleVariables(clauses);
+				notBruteForce(clauses,singleVars);
 			}
 		}
 	}
 
-	public ArrayList<Integer> allPossibleVariables(){
+	public ArrayList<Integer> allPossibleVariables(ArrayList<Integer> clauses){
 		ArrayList<Integer> singleVars = new ArrayList<Integer>();
 
 		int temp,totalNums = 0;
@@ -166,6 +176,7 @@ public class MainCodeArea {
 	public void bruteForceMethod(ArrayList<Integer> clauses, int[][] truthTable){
 		int x1Bool = 1, x2Bool = 1, prevMax = 0, currMax = 0, col = 0, truthCounter = 0;
 		String output = "";
+		boolean counter = true;
 		
 
 		for(int row = 1; row < truthTable.length; row++){
@@ -186,14 +197,20 @@ public class MainCodeArea {
 			prevMax = currMax;
 			currMax = Math.max(truthCounter,currMax);
 			if(currMax == truthCounter ){
-				if(currMax > prevMax ) output = "";
-				for(int c = 0; c < truthTable[0].length; c++){
-					if(truthTable[0][c] > 0){
-						if (truthTable[row][c] == 1) output += "T";
-						else output += "F";	
-					}
+				if(currMax > prevMax ) {
+					output = output.replaceAll("T","").replaceAll("F","");
+					counter = true;
 				}
-				output+="\n";
+				if(counter){
+					for(int c = 0; c < truthTable[0].length; c++){
+						if(truthTable[0][c] > 0){
+							if (truthTable[row][c] == 1) output += "T";
+							else output += "F";	
+						}
+					}
+					counter = false;
+				}
+				//output+="\n";
 			}
 		}
 		System.out.println("Max truths " + currMax + "\n"+output);
@@ -215,5 +232,102 @@ public class MainCodeArea {
 		}
 		return xVarUsed; 
 	}	
+
+	public int countPosNegs(ArrayList<Integer>clauses, int comp){
+		int pos = 0, neg = 0;
+		boolean testPosNeg;
+
+		for (int i = 0 ; i < clauses.size() ; i++ ) {
+			//testPosNeg =  || clauses.get(i) == comp*-1;
+			if( clauses.get(i) == comp ){
+				if(clauses.get(i) > 0)
+					pos++;
+				else
+					neg++;
+			}
+		}
+
+		if(pos>neg)
+			return pos;
+		else
+			return neg;
+
+
+	}
+
+	public ArrayList<Integer>  removeClauses(ArrayList<Integer>clauses, int remove){
+		for (int i = 0; i < clauses.size(); i ++ ) {
+			if(clauses.get(i) == remove || clauses.get(i+1) == remove ){
+				clauses.remove(i);
+				clauses.remove(i);
+				i = -1;
+				numTruthValues++;
+			}
+			else
+				i++;
+			
+		}
+		return clauses;
+	}
+
+	public void notBruteForce(ArrayList<Integer>clauses,ArrayList<Integer>singleVars){
+		int totalNums = singleVars.remove(singleVars.size()-1);
+		ArrayList<Integer> xVarUsed = xVarUsed(clauses,singleVars);
+		
+
+		int[][] varsNumofPosNeg = new int[xVarUsed.size()][2];
+		//1 in the j place means more true than false 
+		//0 in the j place means more false than true
+		System.out.println(xVarUsed);
+
+		for(int i = 0; i < xVarUsed.size(); i++){
+			varsNumofPosNeg[i][0] = xVarUsed.get(i);
+		}
+		for (int i = 0 ; i < xVarUsed.size() ; i++ ) {
+			for (int j = 1; j < 2 ; j++){
+				varsNumofPosNeg[i][j] = countPosNegs(clauses, singleVars.get(i));
+			}
+		}
+
+		for ( int i = 0 ; i < varsNumofPosNeg.length ; i++ ) {
+			for ( int j = 0 ; j < varsNumofPosNeg[0].length ; j++ ) {
+				System.out.print(varsNumofPosNeg[i][j]+"\t");
+			}
+			System.out.println();	
+		}
+
+
+		int x1 = 0;
+		int x2 = 0; 
+		String output = "";
+		for (int i = 0 ; i < xVarUsed.size() ; i++ ) {
+			if(i+1 < xVarUsed.size() ){
+				if(varsNumofPosNeg[i][0] == (varsNumofPosNeg[i+1][0])*-1){
+					x1 = varsNumofPosNeg[i][1];
+					x2 = varsNumofPosNeg[i+1][1];
+				}
+			}
+			else{
+				x1 = varsNumofPosNeg[i][1];
+				x2 = 0;
+			}
+			if(x1 > x2){
+				clauses = removeClauses(clauses,varsNumofPosNeg[i][0]);
+				
+				
+			}
+			else if ( x1 < x2){
+				clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
+				
+			}
+			i++;
+
+			if(x1 > x2)
+				output += "T";
+			else
+				output += "F";		
+		}
+		System.out.println(numTruthValues + "\n" +output);
+	}
 }
 
