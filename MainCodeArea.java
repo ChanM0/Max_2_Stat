@@ -12,7 +12,7 @@ public class MainCodeArea {
 	then passes the int ArrayList 
 	then sends int array list to choice
 	*/
-	public void readFile(){
+	public ArrayList<Integer> readFile(){
 		ArrayList<Integer> clauses = new ArrayList<Integer>();
 		String line = null;
 		String[] lineA;
@@ -32,24 +32,45 @@ public class MainCodeArea {
 		catch(IOException exIO){
 			System.out.println("cant Read File!");
 		}
-		choice(clauses);
+		return clauses;
 	}
 
-	public void choice(ArrayList<Integer> clauses){
+	
+
+	public void menu(){
+		ArrayList<Integer> clauses = readFile();
+		ArrayList<Integer> singleVars = allPossibleVariables(clauses);
+		 ArrayList<Integer> xVarUsed = xVarUsed(clauses, singleVars);
 		Scanner user = new Scanner(System.in);
 		String output = "\n1) True Optimal Solution (slow)\n2) Pretty Good Solution (fast)\n>";
 		NotBruteForce nbf = new NotBruteForce();
 		int ui = 1;
-      
-      System.out.print(output);
 		while(ui>0 && ui<3){
+			System.out.print(output);
 			ui = user.nextInt();
 			if(ui == 1)
 				bruteForcePart1(clauses);
-			else
+			else{
 				nbf.notBruteForce(clauses);
-         System.out.print(output);
+			}
 		}
+	}
+
+	public ArrayList<Integer> allPossibleVariables(){
+		ArrayList<Integer> singleVars = new ArrayList<Integer>();
+
+		int temp,totalNums = 0;
+
+		for(int i = 0; i < clauses.size(); i++){ // put this in read file
+			temp = Math.abs(clauses.get(i));
+			if(checkIfItExists(singleVars,temp) == false){ //checks if it does not exist
+				singleVars.add(temp);
+				totalNums++;
+				singleVars.add((temp * -1));
+			}
+		}
+		singleVars.add(totalNums);//stores total nums
+		return singleVars;
 	}
 
 
@@ -73,7 +94,7 @@ public class MainCodeArea {
 			for (int col = 0 ;col < truthTable[0].length ;  col++) 
 				System.out.print(truthTable[row][col] + "\t");
 			if(row == 0) System.out.print("\n-------------------------\n");
-         System.out.println();
+			System.out.println();
 		}
 	}
 
@@ -82,33 +103,21 @@ public class MainCodeArea {
 	and a truth table 
 	with the corresponding not values
 	*/
-	public void bruteForcePart1(ArrayList<Integer> clauses){
-		ArrayList<Integer> absValueList = new ArrayList<Integer>(); //rename single variables
-		int[][] truthTable;
-		int temp,totalNums = 0;
-
-		for(int i = 0; i < clauses.size(); i++){ // put this in read file
-			temp = Math.abs(clauses.get(i));
-			if(checkIfItExists(absValueList,temp) == false){ //checks if it does not exist
-				absValueList.add(temp);
-				totalNums++;
-				absValueList.add((temp * -1));
-			}
-		}
-		truthTable = createTruthTable(absValueList,totalNums);
-		//ArrayList<Integer> xVarUsed = xVarUsed(clauses, absValueList); delete this maybe?
+	public void bruteForcePart1(ArrayList<Integer> clauses,ArrayList<Integer> singleVars){
+		int totalNums = singleVars.remove(singleVars.size()-1); 
+		int[][] truthTable = createTruthTable(singleVars,totalNums);
 		print2dArray(totalNums, truthTable);
 		bruteForceMethod(clauses,truthTable);
 	}
 	/*
 	creates a truth table with the coresspoding not values
 	*/
-	public int[][] createTruthTable(ArrayList<Integer> absValueList,int totalNums){
+	public int[][] createTruthTable(ArrayList<Integer> singleVars,int totalNums){
 		int[][] truthTable = new int[(int)((Math.pow(2,totalNums))+1)][totalNums*2];
 		int ans = 0, column = 0;
 
 		for(int col = 0; col < (totalNums*2) ; col++)
-			truthTable[0][col] = absValueList.get(col);
+			truthTable[0][col] = singleVars.get(col);
 
 		for (int row = 1; row<(int)((Math.pow(2,totalNums))+1); row++) {
 			column = 0;
@@ -127,22 +136,7 @@ public class MainCodeArea {
 		return truthTable;
 	}
 
-	/*
-	creates the an array list with only the x variables used within the input
-	*/
-	public ArrayList<Integer> xVarUsed(ArrayList<Integer> clauses, ArrayList<Integer> absValueList){
-		int temp = 0;
-		boolean checkIfItExists = true;
-		ArrayList<Integer> xVarUsed = new ArrayList<Integer>();
-
-		for(int i = 0; i < absValueList.size(); i++){
-			temp = absValueList.get(i);
-			checkIfItExists = checkIfItExists(clauses,temp);
-			if(checkIfItExists)
-				xVarUsed.add(temp);
-		}
-		return xVarUsed; 
-	}
+	
 	/*
 	get the corresponding variables boolean value via the truth table 
 	by finding its coressponding column : 
@@ -203,6 +197,23 @@ public class MainCodeArea {
 			}
 		}
 		System.out.println("Max truths " + currMax + "\n"+output);
+	}
+
+		/*
+	creates the an array list with only the x variables used within the input
+	*/
+	public ArrayList<Integer> xVarUsed(ArrayList<Integer> clauses, ArrayList<Integer> absValueList){
+		int temp = 0;
+		boolean checkIfItExists = true;
+		ArrayList<Integer> xVarUsed = new ArrayList<Integer>();
+
+		for(int i = 0; i < absValueList.size(); i++){
+			temp = absValueList.get(i);
+			checkIfItExists = checkIfItExists(clauses,temp);
+			if(checkIfItExists)
+				xVarUsed.add(temp);
+		}
+		return xVarUsed; 
 	}	
 }
 
