@@ -10,7 +10,7 @@ public class MainCodeArea {
 	reads input from input3.txt file. 
 	reads input by line a into a line array with a delimiter
 	then passes the int ArrayList 
-	then sends int array list to getTableNArrays
+	then sends int array list to choice
 	*/
 	public void readFile(){
 		ArrayList<Integer> clauses = new ArrayList<Integer>();
@@ -32,8 +32,28 @@ public class MainCodeArea {
 		catch(IOException exIO){
 			System.out.println("cant Read File!");
 		}
-		getTableNArrays(clauses);
+		choice(clauses);
 	}
+
+	public void choice(ArrayList<Integer> clauses){
+		Scanner user = new Scanner(System.in);
+		String output = "\n1) True Optimal Solution (slow)\n2) Pretty Good Solution (fast)\n>";
+		NotBruteForce nbf = new NotBruteForce();
+		int ui = 1;
+      
+      System.out.print(output);
+		while(ui>0 && ui<3){
+			ui = user.nextInt();
+			if(ui == 1)
+				bruteForcePart1(clauses);
+			else
+				nbf.notBruteForce(clauses);
+         System.out.print(output);
+		}
+	}
+
+
+
 
 	/*
 	returns true if a member of the ArrayList Integer exists 
@@ -53,6 +73,7 @@ public class MainCodeArea {
 			for (int col = 0 ;col < truthTable[0].length ;  col++) 
 				System.out.print(truthTable[row][col] + "\t");
 			if(row == 0) System.out.print("\n-------------------------\n");
+         System.out.println();
 		}
 	}
 
@@ -61,7 +82,7 @@ public class MainCodeArea {
 	and a truth table 
 	with the corresponding not values
 	*/
-	public void getTableNArrays(ArrayList<Integer> clauses){
+	public void bruteForcePart1(ArrayList<Integer> clauses){
 		ArrayList<Integer> absValueList = new ArrayList<Integer>(); //rename single variables
 		int[][] truthTable;
 		int temp,totalNums = 0;
