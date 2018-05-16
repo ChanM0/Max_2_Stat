@@ -206,6 +206,7 @@ public class MainCodeArea {
 		return xVarUsed;
 	}	
 
+	//counts how many positives and negatives there are
 	public int countPosNegs(ArrayList<Integer>clauses, int comp){
 		int pos = 0, neg = 0;
 
@@ -219,7 +220,8 @@ public class MainCodeArea {
 		else return neg;
 	}
 
-	public ArrayList<Integer>  removeClauses(ArrayList<Integer>clauses, int remove){
+	//removes the clauses for the most common elemenet
+	public ArrayList<Integer> removeClauses(ArrayList<Integer>clauses, int remove){
 		for (int i = 0; i < clauses.size(); i ++ ) {
 			if(clauses.get(i) == remove || clauses.get(i+1) == remove ){
 				clauses.remove(i);
@@ -233,6 +235,7 @@ public class MainCodeArea {
 		return clauses;
 	}
 
+	//counts how common each elemenet is 
 	public void notBruteForcePart1(ArrayList<Integer>clauses,ArrayList<Integer>allVariables){
 		int totalNums = allVariables.remove(allVariables.size()-1);
 		ArrayList<Integer> xVarUsed = xVarUsed(clauses);
@@ -250,8 +253,12 @@ public class MainCodeArea {
 
 		notBruteForcePart2(clauses,varsNumofPosNeg);
 	}
-
-	public void notBruteForcePart2(ArrayList<Integer>clauses,int[][] varsNumofPosNeg ){
+	/*
+	compares how common each positive element and its corresponding negative element is
+	if the positive is more common remove that element fromt the array list
+	else remove the negative from the array list 
+	*/
+	 public void notBruteForcePart2(ArrayList<Integer>clauses,int[][] varsNumofPosNeg ){
 		int x1 = 0, x2 = 0; 
 		String output = "";
 
@@ -266,14 +273,17 @@ public class MainCodeArea {
 				x1 = varsNumofPosNeg[i][1];
 				x2 = 0;
 			}
-			if(x1 > x2)
+			if(x1 > x2){
 				clauses = removeClauses(clauses,varsNumofPosNeg[i][0]);
-			else//( x1 < x2)
-			clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
-			i++;
+				output += "T";
+			}
+			
 
-			if(x1 > x2) output += "T";
-			else output += "F";		
+			else{
+				clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
+				output += "F";	
+			}
+			i++;	
 		}
 		System.out.println(numTruthValues + "\n" +output);
 	}
