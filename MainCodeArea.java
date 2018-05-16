@@ -66,28 +66,20 @@ public class MainCodeArea {
 
 	public ArrayList<Integer> allPossibleVariables(ArrayList<Integer> clauses){
 		ArrayList<Integer> allVariables = new ArrayList<Integer>();
+		Set<Integer> posNegVariables = new HashSet<Integer>();
 
 		int temp,totalNums = 0;
 
 		for(int i = 0; i < clauses.size(); i++){ // put this in read file
-			temp = Math.abs(clauses.get(i));
-			if(checkIfItExists(allVariables,temp) == false){ //checks if it does not exist
-				allVariables.add(temp);
+			if(posNegVariables.add(clauses.get(i))){//checks if it does not exist
 				totalNums++;
-				allVariables.add((temp * -1));
+				posNegVariables.add(clauses.get(i)*-1);
+				allVariables.add(clauses.get(i));
+				allVariables.add(clauses.get(i)*-1);
 			}
 		}
 		allVariables.add(totalNums);//stores total nums
 		return allVariables;
-	}
-	/*
-	returns true if a member of the ArrayList Integer exists 
-	retruns false if it doesnt 
-	*/
-	public boolean checkIfItExists(ArrayList<Integer> ar,int temp){
-		for(int i = 0; i < ar.size(); i++)
-			if(temp ==ar.get(i))  return true; // does exist
-		return false; // does not exist
 	}
 
 	/*
@@ -198,16 +190,20 @@ public class MainCodeArea {
 		/*
 	creates the an array list with only the x variables used within the input
 	*/
-	public ArrayList<Integer> xVarUsed(ArrayList<Integer> clauses, ArrayList<Integer> absValueList){
+	public ArrayList<Integer> xVarUsed(ArrayList<Integer> clauses){
 		ArrayList<Integer> xVarUsed = new ArrayList<Integer>();
-		int temp = 0;
-
-		for(int i = 0; i < absValueList.size(); i++){
-			temp = absValueList.get(i);
-			if(checkIfItExists(clauses,temp))
-				xVarUsed.add(temp);
+		Set<Integer> xVarUsedSet = new HashSet<Integer>();
+		for(int i = 0; i < clauses.size(); i++){ 
+			if(xVarUsedSet.add(clauses.get(i))){
+				xVarUsed.add(clauses.get(i));
+				for (int j = 0 ; j < clauses.size() ; j++ ) {
+					if(xVarUsedSet.add(clauses.get(i)*-1))
+						xVarUsed.add(clauses.get(i)*-1);
+					
+				}
+			}
 		}
-		return xVarUsed; 
+		return xVarUsed;
 	}	
 
 	public int countPosNegs(ArrayList<Integer>clauses, int comp){
@@ -239,7 +235,7 @@ public class MainCodeArea {
 
 	public void notBruteForcePart1(ArrayList<Integer>clauses,ArrayList<Integer>allVariables){
 		int totalNums = allVariables.remove(allVariables.size()-1);
-		ArrayList<Integer> xVarUsed = xVarUsed(clauses,allVariables);
+		ArrayList<Integer> xVarUsed = xVarUsed(clauses);
 
 		int[][] varsNumofPosNeg = new int[xVarUsed.size()][2];
 
@@ -272,8 +268,8 @@ public class MainCodeArea {
 			}
 			if(x1 > x2)
 				clauses = removeClauses(clauses,varsNumofPosNeg[i][0]);
-			else if ( x1 < x2)
-				clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
+			else//( x1 < x2)
+			clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
 			i++;
 
 			if(x1 > x2) output += "T";
