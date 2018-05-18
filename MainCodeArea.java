@@ -68,7 +68,7 @@ public class MainCodeArea {
 		ArrayList<Integer> allVariables = new ArrayList<Integer>();
 		Set<Integer> posNegVariables = new HashSet<Integer>();
 
-		int temp,totalNums = 0;
+		int totalNums = 0;
 
 		for(int i = 0; i < clauses.size(); i++){ // put this in read file
 			if(posNegVariables.add(clauses.get(i))){//checks if it does not exist
@@ -143,16 +143,16 @@ public class MainCodeArea {
 			then we increase the truth counter
 
 	before the ending of each row itteration 
-	we take the max truthCounter and the previous max 
+	we take the max truths and the previous max 
 	to find the max amount of truths between all the itterations
 	*/
 	public void bruteForceMethod(ArrayList<Integer> clauses, int[][] truthTable){
-		int x1Bool = 1, x2Bool = 1, prevMax = 0, currMax = 0, col = 0, truthCounter = 0;
+		int x1Bool = 1, x2Bool = 1, prevMax = 0, currMax = 0, col = 0, truths = 0;
 		String output = "";
-		boolean test = true;
+		boolean currMaxIsGreaterThanPrevMax = true;
 
 		for(int row = 1; row < truthTable.length; row++){
-			truthCounter = 0;
+			truths = 0;
 			for (int clos = 0; clos < clauses.size() ; clos++ ) {
 
 				col = getColIndex(truthTable, clauses.get(clos) );
@@ -164,27 +164,26 @@ public class MainCodeArea {
 				x2Bool = truthTable[row][col];
 
 				if( ( (x1Bool == 1) || (x2Bool == 1) ) )
-					truthCounter++;
+					truths++;
 			}
 			prevMax = currMax;
-			currMax = Math.max(truthCounter,currMax);
-			if(currMax == truthCounter ){
+			currMax = Math.max(truths,currMax);
+			if(currMax == truths ){
 				if(currMax > prevMax ) {
 					output = output.replaceAll("T","").replaceAll("F","");
-					test = true;
+					currMaxIsGreaterThanPrevMax = true;
 				}
-				if(test){
-					for(int c = 0; c < truthTable[0].length; c++){
-						if(truthTable[0][c] > 0){
+				if(currMaxIsGreaterThanPrevMax){
+					for(int c = 0; c < truthTable[0].length; c++)
+						if(truthTable[0][c] > 0)
 							if (truthTable[row][c] == 1) output += "T";
 							else output += "F";	
-						}
-					}
-					test = false;
+					
+					currMaxIsGreaterThanPrevMax = false;
 				}
 			}
 		}
-		System.out.println("Max truths " + currMax + "\n"+output);
+		System.out.println(currMax + " "+output);
 	}
 
 		/*
@@ -193,14 +192,13 @@ public class MainCodeArea {
 	public ArrayList<Integer> xVarUsed(ArrayList<Integer> clauses){
 		ArrayList<Integer> xVarUsed = new ArrayList<Integer>();
 		Set<Integer> xVarUsedSet = new HashSet<Integer>();
+
 		for(int i = 0; i < clauses.size(); i++){ 
 			if(xVarUsedSet.add(clauses.get(i))){
 				xVarUsed.add(clauses.get(i));
-				for (int j = 0 ; j < clauses.size() ; j++ ) {
+				for (int j = 0 ; j < clauses.size() ; j++ )
 					if(xVarUsedSet.add(clauses.get(i)*-1))
 						xVarUsed.add(clauses.get(i)*-1);
-					
-				}
 			}
 		}
 		return xVarUsed;
@@ -210,46 +208,44 @@ public class MainCodeArea {
 	public int countPosNegs(ArrayList<Integer>clauses, int comp){
 		int pos = 0, neg = 0;
 
-		for (int i = 0 ; i < clauses.size() ; i++ ) {
-			if( clauses.get(i) == comp ){
+		for (int i = 0 ; i < clauses.size() ; i++ ) 
+			if( clauses.get(i) == comp )
 				if(clauses.get(i) > 0) pos++;
 				else neg++;
-			}
-		}
+		
 		if(pos>neg) return pos;
 		else return neg;
 	}
 
 	//removes the clauses for the most common elemenet
-	public ArrayList<Integer> removeClauses(ArrayList<Integer>clauses, int remove){
+	public ArrayList<Integer> removeClauses(ArrayList<Integer>clauses, int removeThis){
+
 		for (int i = 0; i < clauses.size(); i ++ ) {
-			if(clauses.get(i) == remove || clauses.get(i+1) == remove ){
+			if(clauses.get(i) == removeThis || clauses.get(i+1) == removeThis ){
 				clauses.remove(i);
 				clauses.remove(i);
-				i = -1;
 				numTruthValues++;
+				i = -1;
 			}
-			else
-				i++;
+			else i++;
 		}
 		return clauses;
 	}
 
-	//counts how common each elemenet is 
+	//counts how common each elemenet is  and puts into a table
 	public void notBruteForcePart1(ArrayList<Integer>clauses,ArrayList<Integer>allVariables){
+
 		int totalNums = allVariables.remove(allVariables.size()-1);
 		ArrayList<Integer> xVarUsed = xVarUsed(clauses);
 
 		int[][] varsNumofPosNeg = new int[xVarUsed.size()][2];
 
-		for(int i = 0; i < xVarUsed.size(); i++){
+		for(int i = 0; i < xVarUsed.size(); i++)
 			varsNumofPosNeg[i][0] = xVarUsed.get(i);
-		}
-		for (int i = 0 ; i < xVarUsed.size() ; i++ ) {
-			for (int j = 1; j < 2 ; j++){
+		
+		for (int i = 0 ; i < xVarUsed.size() ; i++ ) 
+			for (int j = 1; j < 2 ; j++)
 				varsNumofPosNeg[i][j] = countPosNegs(clauses, allVariables.get(i));
-			}
-		}
 
 		notBruteForcePart2(clauses,varsNumofPosNeg);
 	}
@@ -263,21 +259,23 @@ public class MainCodeArea {
 		String output = "";
 
 		for (int i = 0 ; i < varsNumofPosNeg.length ; i++ ) {
+
 			if(i+1 < varsNumofPosNeg.length ){
 				if(varsNumofPosNeg[i][0] == (varsNumofPosNeg[i+1][0])*-1){
 					x1 = varsNumofPosNeg[i][1];
 					x2 = varsNumofPosNeg[i+1][1];
 				}
 			}
+
 			else{
 				x1 = varsNumofPosNeg[i][1];
 				x2 = 0;
 			}
+
 			if(x1 > x2){
 				clauses = removeClauses(clauses,varsNumofPosNeg[i][0]);
 				output += "T";
 			}
-			
 
 			else{
 				clauses = removeClauses(clauses,varsNumofPosNeg[i+1][0]);
